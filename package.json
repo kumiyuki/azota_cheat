@@ -1,0 +1,40 @@
+{
+  "name": "azota_cheat",
+  "module": "index.js",
+  "type": "module",
+  "author": {
+    "name": "kumiyui",
+    "url": "https://github.com/kumiyuki"
+  },
+  "kumiyui": {
+    "headers": {
+      "name": "azota_cheat",
+      "version": "2.0.0",
+      "namespace": "https://github.com/kumiyuki/azota_cheat/",
+      "description": "cheat for azota",
+      "author": "kumiyuki",
+      "include": ["/^https?:\\/\\/azota\\.vn\\/.*\\/test\\/(take-test|take-training)\\/.*$/"],
+      "icon": "https://www.google.com/s2/favicons?sz=64&domain=azota.vn",
+      "license": "GPL-3.0",
+      "grant": [
+        "GM_setValue",
+        "GM_getValue",
+        "GM_registerMenuCommand",
+        "GM_unregisterMenuCommand"
+      ],
+      "run-at": "document-start"
+    },
+    "entry": "./index.js",
+    "output": "./dist/azota_cheat.user.js"
+  },
+  "scripts": {
+    "build": "bun kumiyui build --minify",
+    "build-no-minify": "bun kumiyui build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "dependencies": {
+    "kumiyui": "github:kumiyuki/kumiyui"
+  }
+}

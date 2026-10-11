@@ -3,12 +3,21 @@
 // The decode process is not really hard, they require webpack knowledge and reverse logic.
 // It's hard if we don't get how the code work, but I believe by using simple reverse logic, you should be able to produce something like this.
 
-(() => {
+export const create_encryption = async () => {
   // webpack name (azota changes the name very frequently)
-  const azt_webpackname = Object.keys(window).find((el) => el?.toString().toLowerCase().replaceAll(" ", "").includes("webpack"));
+  let azt_webpackname = await new Promise((resolve) => {
+    const webpack_load_interval = setInterval(() => {
+      const webpack_re = Object.keys(unsafeWindow ?? {}).find((el) => el?.toString().toLowerCase().replaceAll(" ", "").includes("webpack"));
+
+      if (typeof webpack_re !== "undefined") {
+        clearInterval(webpack_load_interval);
+        return resolve(webpack_re);
+      }
+    }, 250);
+  })
 
   // Webpack require
-  let wpRequire = window[azt_webpackname].push([[Symbol()], {}, (r) => r]); // Thanks to aamia's CompleteDiscordQuest.md script!!
+  const wpRequire = (unsafeWindow ?? {})?.[azt_webpackname].push([[Symbol()], {}, (r) => r]); // Thanks to aamia's CompleteDiscordQuest.md script!!
   const gzipHelper = wpRequire(87941).f.prototype; // On the chunk #87941
 
   // resultContentSupport seems to miss the `this` variable, that's why it run the catch {} block and return the whole string instead of doing its job.
@@ -25,12 +34,12 @@
     },
   };
 
-  // wpRequire(30598).R.prototype.getContentHashConfigSystem()
+  // wpRequire(3949).R.prototype.getContentHashConfigSystem()
   // ERROR: can't access property "resultContentSupport", this.gzipHelper is undefined
   // the solution to this error can be fixed by using the first class (yes and I found it, you can see that gzipHelper variable on the line above).
 
   const str_hashExtractTemplate =
-    wpRequire(30598).R.prototype.getContentHashConfigSystem.bind(
+    wpRequire(3949).R.prototype.getContentHashConfigSystem.bind(
       env_gzipHelper,
     )();
 
@@ -42,7 +51,7 @@
     the getContentHashConfigSystem() makes me realize that castJsonToObj should be the same, because they are in the same `this.commonSerice`
   */
   const hashExtractTemplate =
-    wpRequire(30598).R.prototype.castJsonToObj.bind(env_gzipHelper)(
+    wpRequire(3949).R.prototype.castJsonToObj.bind(env_gzipHelper)(
       str_hashExtractTemplate,
     ) ?? []; // i need to make them all the same, and match original logic condition (so copy the "?? []" from their code)
 
@@ -50,15 +59,14 @@
     hashExtractTemplate: hashExtractTemplate,
     commonService: {
       castJsonToObj: (...args) =>
-        wpRequire(30598).R.prototype.castJsonToObj.bind(env_gzipHelper)(
+        wpRequire(3949).R.prototype.castJsonToObj.bind(env_gzipHelper)(
           ...args,
         ),
     },
   }; // Create a fake this.hashExtractTemplate for .bind(), .bind() function will read the variable inside and turn into "this" variable
 
-  // Now you can encode and decode the content, you can use `window._encode_` and `window._decode_` in your browser's console now!!!
-  window._encode_ = (str) =>
-    wpRequire(98230).w.prototype.encode.bind(env_hashExtractTemplate)(str);
-  window._decode_ = (str) =>
-    wpRequire(98230).w.prototype.decode.bind(env_hashExtractTemplate)(str);
-})();
+  return {
+    encode: (str) => wpRequire(98230).w.prototype.encode.bind(env_hashExtractTemplate)(str),
+    decode: (str) => wpRequire(98230).w.prototype.decode.bind(env_hashExtractTemplate)(str)
+  }
+}
