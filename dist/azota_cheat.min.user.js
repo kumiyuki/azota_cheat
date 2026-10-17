@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            azota_cheat
-// @version         2.0.0
+// @version         2.1.0
 // @namespace       https://github.com/kumiyuki/azota_cheat/
-// @description     cheat for azota
+// @description     cheat for azota.vn platform
 // @author          kumiyuki
 // @include         /^https?:\/\/azota\.vn\/.*\/test\/(take-test|take-training)\/.*$/
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=azota.vn
@@ -14,7 +14,7 @@
 // @run-at          document-start
 // @downloadURL     https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js
 // @updateURL       https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js
-// @require         https://cdn.jsdelivr.net/gh/kumiyuki/kumiyui@HEAD/cdn_build/dist/kumiyui.min.js
+// @require         https://cdn.jsdelivr.net/gh/kumiyuki/kumiyui@v1.4.4/cdn_build/dist/kumiyui.min.js
 // ==/UserScript==
 
 "use strict";

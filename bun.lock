@@ -5,6 +5,7 @@
     "": {
       "name": "azota_cheat",
       "dependencies": {
+        "kumiyui": "github:kumiyuki/kumiyui#v1.4.4",
         "kumiyui": "github:kumiyuki/kumiyui",
       },
       "devDependencies": {
@@ -19,7 +20,7 @@
 
     "bun-types": ["bun-types@1.4.3", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg=="],
 
-    "kumiyui": ["kumiyui@github:kumiyuki/kumiyui#e0ced44", { "bin": { "kumiyui": "./cli.js" } }, "kumiyuki-kumiyui-e0ced44", "sha512-gcTtg1zzbdXrlJ/6Xj2/cc9MJVM6DzNX62q44zi87QDQKOvdy8BBcFlysyh4dGP0nvUxOsSvg+8b2Wgda6TqyQ=="],
+    "kumiyui": ["kumiyui@github:kumiyuki/kumiyui#d03ff12", { "bin": { "kumiyui": "./cli.js" } }, "kumiyuki-kumiyui-d03ff12", "sha512-nWOnM9LfrU5ZAaFs76YjYLyoQyO2lWurjzjw3++/DwX+YRFGqmkr1nNDlFR0fmt3SQPDIm6wROuBHCyj+UJdvA=="],
 
     "undici-types": ["undici-types@8.12.2", "", {}, "sha512-VoMeD2O0KdHhcn+oPqOrpivN+7aDOklVSwOLD7JNjbzV1CboAFek9IFOXnreoufTUtAsCsOK0iETiERPNR/fDA=="],
 
