@@ -27,10 +27,12 @@
       "updateURL": "https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js"
     },
     "entry": "./index.js",
-    "output": "./dist/azota_cheat.user.js"
+    "output": "./dist/azota_cheat.user.js",
+    "minified_output_path": "./dist/azota_cheat.min.user.js"
   },
   "scripts": {
-    "build": "bun kumiyui build --minify",
+    "build": "bun kumiyui build --both",
+    "build-minify": "bun kumiyui build --minify",
     "build-no-minify": "bun kumiyui build"
   },
   "devDependencies": {
