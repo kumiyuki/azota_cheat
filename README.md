@@ -6,7 +6,7 @@ it took a little bit of time for me to reverse engineer this web application. Th
 1. install userscripts extension. I recommend using tampermonkey.
 2. install the scripts:
 - **click on the raw link**: https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js
-3. press `Install`
+3. press `Install`.
 
 ## modules
 - [anti_app_restriction](./modules/anti_app_restriction.js): bypass azota's app restriction, and allow you to take a test on web without requiring the azota student app.
