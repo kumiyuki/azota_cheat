@@ -5,7 +5,7 @@ it took a little bit of time for me to reverse engineer this web application. Th
 ## installation
 1. install userscripts extension. I recommend using tampermonkey.
 2. install the scripts:
-- **click on the raw link**: https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js
+- **click on the raw link**: https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.min.user.js
 3. press `Install`.
 
 ## modules
