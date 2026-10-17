@@ -22,7 +22,9 @@
         "GM_registerMenuCommand",
         "GM_unregisterMenuCommand"
       ],
-      "run-at": "document-start"
+      "run-at": "document-start",
+      "downloadURL": "https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js",
+      "updateURL": "https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js"
     },
     "entry": "./index.js",
     "output": "./dist/azota_cheat.user.js"

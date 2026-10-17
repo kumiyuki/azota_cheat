@@ -7,6 +7,8 @@
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=azota.vn
 // @license         GPL-3.0
 // @run-at          document-start
+// @downloadURL     https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js
+// @updateURL       https://raw.githubusercontent.com/kumiyuki/azota_cheat/refs/heads/main/dist/azota_cheat.user.js
 // @include         /^https?:\/\/azota\.vn\/.*\/test\/(take-test|take-training)\/.*$/
 // @grant           GM_setValue
 // @grant           GM_getValue
