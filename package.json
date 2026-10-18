@@ -13,7 +13,7 @@
       "namespace": "https://github.com/kumiyuki/azota_cheat/",
       "description": "cheat for azota.vn platform",
       "author": "kumiyuki",
-      "include": ["/^https?:\\/\\/azota\\.vn\\/.*\\/test\\/(take-test|take-training)\\/.*$/"],
+      "include": ["/^https?:\\/\\/azota\\.vn\\/.*\\/de-thi\\/.*$/", "/^https?:\\/\\/azota\\.vn\\/.*\\/test\\/(take-test|take-training)\\/.*$/"],
       "icon": "https://www.google.com/s2/favicons?sz=64&domain=azota.vn",
       "license": "GPL-3.0",
       "grant": [
@@ -31,7 +31,7 @@
     "minified_output_path": "./dist/azota_cheat.min.user.js"
   },
   "scripts": {
-    "build": "bun kumiyui build --both",
+    "build": "bun kumiyui build --both --bundle-kumiyui",
     "build-minify": "bun kumiyui build --minify",
     "build-no-minify": "bun kumiyui build"
   },

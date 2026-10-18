@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name            azota_cheat
-// @version         2.2.0
+// @version         2.2.1
 // @namespace       https://github.com/kumiyuki/azota_cheat/
 // @description     cheat for azota.vn platform
 // @author          kumiyuki
+// @include         /^https?:\/\/azota\.vn\/.*\/de-thi\/.*$/
 // @include         /^https?:\/\/azota\.vn\/.*\/test\/(take-test|take-training)\/.*$/
 // @icon            https://www.google.com/s2/favicons?sz=64&domain=azota.vn
 // @license         GPL-3.0
@@ -1408,12 +1409,55 @@ var anti_app_restriction = ({ logger }) => {
   };
 };
 
+// modules/vip_bypass.js
+var is_toggled4 = false;
+register_network_hook("after", async (context2, response) => {
+  if (!is_toggled4)
+    return;
+  const url = context2.args[0]?.toString().toLowerCase().replaceAll(" ", "");
+  if (url.includes("FrontExam/MustViewAds")) {
+    const _json = await response.json() ?? {};
+    _json.data = false;
+    return {
+      body: JSON.stringify(_json)
+    };
+  }
+  if (url.includes("FrontVip/CheckVipObject")) {
+    const _json = await response.json() ?? {};
+    _json.data = true;
+    return {
+      body: JSON.stringify(_json)
+    };
+  }
+});
+var vip_bypass = () => {
+  const main = (args, toggle) => {
+    is_toggled4 = toggle;
+    if (toggle === true && get("vip_bypass_on_reload", false) !== true) {
+      is_toggled4 = false;
+      alert("please reload to load vip_bypass");
+      set("vip_bypass_on_reload", true);
+      return window.location.reload();
+    }
+    if (toggle === false)
+      set("vip_bypass_on_reload", false);
+  };
+  return {
+    command: "vip_bypass",
+    aliases: ["vip"],
+    description: "disable ads and be able to attend the test without relying on teacher's VIP pack status.",
+    is_toggle: true,
+    callback_fn: main
+  };
+};
+
 // index.js
 var logger5 = new Logger({ name: "azota_cheat", level: Logger.LEVELS.info });
 [
   anti_fullscreen_bypass(),
   no_timer(),
-  anti_app_restriction(logger5.child("anti_app_restriction"))
+  anti_app_restriction(logger5.child("anti_app_restriction")),
+  vip_bypass()
 ].forEach((command) => {
   Command(command);
 });
