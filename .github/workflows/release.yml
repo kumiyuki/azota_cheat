@@ -29,7 +29,7 @@ jobs:
       - name: get version from package.json
         id: package_version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=$(node -p "require('./package.json').kumiyui.headers.version")
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
 
       - name: commit build assets to main branch
