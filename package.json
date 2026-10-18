@@ -39,6 +39,6 @@
     "@types/bun": "latest"
   },
   "dependencies": {
-    "kumiyui": "github:kumiyuki/kumiyui#v2.0.4"
+    "kumiyui": "github:kumiyuki/kumiyui#v2.0.6"
   }
 }
