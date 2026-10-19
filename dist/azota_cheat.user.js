@@ -256,7 +256,7 @@ class DropInConsole {
 }
 
 // node_modules/kumiyui/modules/logger.js
-var console2 = window.console;
+var console = window.console;
 var ui_console = null;
 var VALID_LEVELS = new Set([10, 20, 30, 40, 50, Infinity]);
 var LEVELS_INT = new Map([
@@ -321,15 +321,15 @@ class Logger {
     const timestamp_output = allow_timestamp === true ? `%c[${new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(11, 23)}]` + " " : "";
     const rendered_output = [`${timestamp_output}%c${LEVELS_INT.get(weight ?? 30)}`, ...output_styles, prefix];
     if (method === "table") {
-      console2.log(...rendered_output);
-      console2.table(...args);
+      console.log(...rendered_output);
+      console.table(...args);
       if (typeof ui_console.log !== "function" && typeof ui_console.table !== "function")
         return;
       ui_console.log(...rendered_output);
       ui_console.table(...args);
       return;
     }
-    console2?.[method](...rendered_output, ...args);
+    console?.[method](...rendered_output, ...args);
     if (typeof ui_console?.[method] === "function")
       ui_console[method](...rendered_output, ...args);
   }
@@ -868,7 +868,6 @@ var _init_network_hook = () => {
       }
       get response() {
         const state = xhr_hook_map.get(this);
-        console.log(state._kumiyui_context);
         if (state._kumiyui_finished === false)
           return null;
         if (state._kumiyui_response?.body === null)
@@ -876,7 +875,6 @@ var _init_network_hook = () => {
         const r_body = state._kumiyui_response?.body;
         const headers = state._kumiyui_response?.headers || {};
         const b_type = state._kumiyui_response?.responseType !== null ? state._kumiyui_response?.responseType : !state._kumiyui_blocked ? super.responseType : null;
-        console.log(r_body);
         try {
           switch (b_type) {
             case "json":
@@ -957,7 +955,6 @@ var _init_network_hook = () => {
         const state = xhr_hook_map.get(this);
         const hook_wrapped_listener = async (..._o_args) => {
           await await_after_hook({ readyState: super.readyState }, state);
-          console.log("finished hooking", state._kumiyui_context.args[0]);
           if (typeof listener === "function") {
             try {
               listener.apply(this, _o_args);
@@ -1341,12 +1338,10 @@ register_network_hook("after", async (context, response) => {
       _decode = decode;
     }
     const _json = await response.json();
-    console.log(_json);
     const data = _decode(_json?.data?.content);
     data.examObj.minutes = Infinity;
     _json.data.content = _encode(data);
     let new_res = JSON.stringify(_json);
-    console.log(new_res);
     return {
       body: new_res
     };
