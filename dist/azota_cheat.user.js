@@ -256,7 +256,7 @@ class DropInConsole {
 }
 
 // node_modules/kumiyui/modules/logger.js
-var console = window.console;
+var console2 = window.console;
 var ui_console = null;
 var VALID_LEVELS = new Set([10, 20, 30, 40, 50, Infinity]);
 var LEVELS_INT = new Map([
@@ -321,15 +321,15 @@ class Logger {
     const timestamp_output = allow_timestamp === true ? `%c[${new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(11, 23)}]` + " " : "";
     const rendered_output = [`${timestamp_output}%c${LEVELS_INT.get(weight ?? 30)}`, ...output_styles, prefix];
     if (method === "table") {
-      console.log(...rendered_output);
-      console.table(...args);
+      console2.log(...rendered_output);
+      console2.table(...args);
       if (typeof ui_console.log !== "function" && typeof ui_console.table !== "function")
         return;
       ui_console.log(...rendered_output);
       ui_console.table(...args);
       return;
     }
-    console?.[method](...rendered_output, ...args);
+    console2?.[method](...rendered_output, ...args);
     if (typeof ui_console?.[method] === "function")
       ui_console[method](...rendered_output, ...args);
   }
@@ -572,16 +572,16 @@ var is_json = (str) => {
     return false;
   }
 };
-var await_after_hook = async (env) => {
-  if (env?.readyState === 4 && env?._kumiyui_finished === true || env?._kumiyui_blocked === true)
+var await_after_hook = async (env, state) => {
+  if (env?.readyState === 4 && state?._kumiyui_finished === true || state?._kumiyui_blocked === true)
     return;
-  if (env?.readyState === 4 && !env._kumiyui_finished) {
+  if (env?.readyState === 4 && !state._kumiyui_finished) {
     await new Promise((resolve) => {
-      env?._kumiyui_change_listeners.push(resolve);
-      if (env._kumiyui_finished === true || env._kumiyui_blocked === true) {
-        const listener_index = env._kumiyui_change_listeners.indexOf(resolve);
+      state?._kumiyui_change_listeners.push(resolve);
+      if (state._kumiyui_finished === true || state._kumiyui_blocked === true) {
+        const listener_index = state._kumiyui_change_listeners.indexOf(resolve);
         if (listener_index !== -1)
-          env._kumiyui_change_listeners.splice(listener_index, 1);
+          state._kumiyui_change_listeners.splice(listener_index, 1);
         return resolve();
       }
     });
@@ -593,12 +593,12 @@ var _init_network_hook = () => {
     obj: window,
     prop: "fetch",
     new_value: async (...args) => {
-      let context2 = { args, api: "fetch" };
+      let context = { args, api: "fetch" };
       let short_circuit_response = null;
       let is_execution_blocked = false;
       let cached_json_body = [];
       let is_json_parsed = [];
-      Object.defineProperty(context2, "json", {
+      Object.defineProperty(context, "json", {
         get() {
           if (is_json_parsed)
             return cached_json_body;
@@ -634,11 +634,11 @@ var _init_network_hook = () => {
         try {
           let modification = null;
           try {
-            modification = await hook(context2);
+            modification = await hook(context);
           } catch (e) {
             logger3.error(`cannot execute hook listener on window.fetch() hook (type: "before"), error:`, e);
           }
-          if (typeof modification !== "undefined") {
+          if (modification !== undefined) {
             if (modification === false) {
               short_circuit_response = undefined;
               is_execution_blocked = true;
@@ -648,7 +648,7 @@ var _init_network_hook = () => {
             let response_body = null;
             if (modification && typeof modification === "object") {
               ["status", "statusText", "headers"].forEach((_res_key) => {
-                if (typeof modification[_res_key] !== "undefined")
+                if (modification[_res_key] !== undefined)
                   _response[_res_key] = modification[_res_key];
               });
               response_body = modification?.body !== undefined ? modification.body : null;
@@ -670,7 +670,7 @@ var _init_network_hook = () => {
         return;
       } else {
         try {
-          response = await o_fetch.apply(window, context2?.args);
+          response = await o_fetch.apply(window, context?.args);
         } catch (net_err) {
           logger3.log("failed to send real network request to the server.", net_err);
           throw net_err;
@@ -684,18 +684,18 @@ var _init_network_hook = () => {
           const response_for_hook = is_last_hook ? response : response.clone();
           let modification = null;
           try {
-            modification = await hook(context2, response_for_hook);
+            modification = await hook(context, response_for_hook);
           } catch (e) {
             logger3.error(`cannot execute hook listener on window.fetch() hook (type: "after"), error:`, e);
           }
-          if (typeof modification !== "undefined") {
+          if (modification !== undefined) {
             if (modification instanceof Response) {
               response = modification;
             } else {
               let _response = { status: 200, statusText: "OK", headers: new Headers };
-              if (modification && typeof modification === "object" && (typeof modification["body"] !== "undefined" || typeof modification["status"] !== "undefined")) {
+              if (modification && typeof modification === "object" && (modification["body"] !== undefined || modification["status"] !== undefined)) {
                 ["status", "statusText", "headers"].forEach((_res_key) => {
-                  if (typeof modification[_res_key] !== "undefined")
+                  if (modification[_res_key] !== undefined)
                     _response[_res_key] = modification[_res_key];
                 });
               }
@@ -715,9 +715,9 @@ var _init_network_hook = () => {
       obj: window.navigator,
       prop: "sendBeacon",
       new_value: (url, data) => {
-        const context2 = { args: [url, data], api: "sendBeacon" };
+        const context = { args: [url, data], api: "sendBeacon" };
         let is_blocked = false;
-        Object.defineProperty(context2, "json", {
+        Object.defineProperty(context, "json", {
           get() {
             if (typeof this?.args[1] === "string") {
               try {
@@ -734,7 +734,7 @@ var _init_network_hook = () => {
           try {
             let modification = null;
             try {
-              modification = hook(context2);
+              modification = hook(context);
             } catch (e) {
               logger3.error(`cannot execute hook listener on sendBeacon hook (type: "before"), error:`, e);
             }
@@ -748,10 +748,10 @@ var _init_network_hook = () => {
         }
         if (is_blocked === true)
           return true;
-        const result = o_send_beacon.apply(window.navigator, context2.args);
+        const result = o_send_beacon.apply(window.navigator, context.args);
         for (const hook of hook_registry?.after) {
           try {
-            hook(context2, result);
+            hook(context, result);
           } catch (e) {
             logger3.error(`cannot execute hook listener on sendBeacon hook (type: "after"), error:`, e);
           }
@@ -762,6 +762,37 @@ var _init_network_hook = () => {
     });
   }
   const xhr_hook_map = new WeakMap;
+  const xhr_before = async (state) => {
+    for (const hook2 of hook_registry?.before) {
+      try {
+        const modification = await hook2(state._kumiyui_context);
+        let _response = { status: 200, statusText: "OK", headers: new Headers, body: null, send_to_server: false };
+        if (modification !== undefined) {
+          if (modification === false) {
+            state._kumiyui_response.body = null;
+            state._kumiyui_blocked = true;
+            hook({ obj: null, prop: "send", new_value: () => {}, options: { mask_hook: true, block_overwrite: true } });
+            break;
+          }
+          if (typeof modification === "object") {
+            ["status", "statusText", "headers", "body", "send_to_server"].forEach((_res_key) => {
+              if (modification[_res_key] !== undefined)
+                _response[_res_key] = modification[_res_key];
+              else if (_res_key === "send_to_server")
+                _response["send_to_server"] = false;
+            });
+            state._kumiyui_response = _response;
+          } else if (typeof modification === "string") {
+            _response["body"] = modification;
+            state._kumiyui_response = _response;
+          }
+          break;
+        }
+      } catch (e) {
+        logger3.error(`cannot execute hook listener on XHR hook (type: "before", first call), error:`, e);
+      }
+    }
+  };
   hook({
     obj: window,
     prop: "XMLHttpRequest",
@@ -775,6 +806,7 @@ var _init_network_hook = () => {
           _kumiyui_has_to_queue_response: false,
           _kumiyui_queued_response: null,
           _kumiyui_is_opened: false,
+          _kumiyui_send_triggered: false,
           _kumiyui_context: { args: ["", null], method: "GET", api: "xhr", before_state: null },
           _kumiyui_response: {
             status: null,
@@ -785,6 +817,7 @@ var _init_network_hook = () => {
             send_to_server: true
           },
           _kumiyui_blocked: false,
+          _kumiyui_event_listeners: new WeakMap,
           _kumiyui_change_listeners: [],
           get _kumiyui_finished() {
             return finished_state;
@@ -809,35 +842,7 @@ var _init_network_hook = () => {
         state._kumiyui_context.method = method;
         state._kumiyui_context.args[0] = url;
         state._kumiyui_context.before_state = "url";
-        for (const hook2 of hook_registry?.before) {
-          try {
-            const modification = await hook2(state._kumiyui_context);
-            let _response = { status: 200, statusText: "OK", headers: new Headers, body: null, send_to_server: false };
-            if (typeof modification !== "undefined") {
-              if (modification === false) {
-                state._kumiyui_response = null;
-                state._kumiyui_blocked = true;
-                hook({ obj: this, prop: "send", new_value: () => {}, options: { mask_hook: true, block_overwrite: true } });
-                break;
-              }
-              if (typeof modification === "object") {
-                ["status", "statusText", "headers", "body", "send_to_server"].forEach((_res_key) => {
-                  if (modification[_res_key] !== undefined)
-                    _response[_res_key] = modification[_res_key];
-                  else if (_res_key === "send_to_server")
-                    _response["send_to_server"] = false;
-                });
-                state._kumiyui_response = _response;
-              } else if (typeof modification === "string") {
-                _response["body"] = modification;
-                state._kumiyui_response = _response;
-              }
-              break;
-            }
-          } catch (e) {
-            logger3.error(`cannot execute hook listener on XHR hook (type: "before", first call), error:`, e);
-          }
-        }
+        await xhr_before(state);
         const open_native = super.open(method, state._kumiyui_context.args[0], ...args);
         state._kumiyui_is_opened = true;
         while (state._kumiyui_queued_headers.length > 0) {
@@ -863,11 +868,15 @@ var _init_network_hook = () => {
       }
       get response() {
         const state = xhr_hook_map.get(this);
+        console.log(state._kumiyui_context);
+        if (state._kumiyui_finished === false)
+          return null;
         if (state._kumiyui_response?.body === null)
           return !state._kumiyui_blocked ? super.response : null;
         const r_body = state._kumiyui_response?.body;
         const headers = state._kumiyui_response?.headers || {};
         const b_type = state._kumiyui_response?.responseType !== null ? state._kumiyui_response?.responseType : !state._kumiyui_blocked ? super.responseType : null;
+        console.log(r_body);
         try {
           switch (b_type) {
             case "json":
@@ -880,6 +889,8 @@ var _init_network_hook = () => {
               const content_type_header = headers["content-type"] || headers["Content-Type"] || "";
               const mime_type = content_type_header.split(";")[0].replaceAll(" ", "") || "application/octet-stream";
               return new Blob([r_body], { type: mime_type });
+            case "text":
+              return r_body;
             default:
               return r_body;
           }
@@ -902,7 +913,7 @@ var _init_network_hook = () => {
       }
       get readyState() {
         const state = xhr_hook_map.get(this);
-        return state._kumiyui_blocked !== true ? super.readyState : 3;
+        return state._kumiyui_blocked !== true && state._kumiyui_finished ? super.readyState : 3;
       }
       getResponseHeader(...data) {
         const state = xhr_hook_map.get(this);
@@ -913,55 +924,73 @@ var _init_network_hook = () => {
         return state._kumiyui_response?.headers !== null ? (state._kumiyui_response.headers?.getAll ?? (() => {}))(...data) : !state._kumiyui_blocked ? super.getAllResponseHeaders(...data) : "";
       }
       set onreadystatechange(on_state_change_fn) {
-        super.onreadystatechange(async (..._o_args) => {
+        super.onreadystatechange = async (..._o_args) => {
           const state = xhr_hook_map.get(this);
-          await await_after_hook(state);
+          await await_after_hook({ readyState: super.readyState }, state);
           if (typeof on_state_change_fn === "function") {
             try {
-              on_state_change_fn(..._o_args);
+              on_state_change_fn.apply(this, _o_args);
             } catch (e) {
               logger3.error("cannot execute function onreadystatechange() on xhr hook, error:", e);
             }
           }
-        });
+        };
       }
       set onload(onload_fn) {
-        super.onload(async (..._o_args) => {
+        super.onload = async (..._o_args) => {
           const state = xhr_hook_map.get(this);
-          await await_after_hook(state);
+          await await_after_hook({ readyState: super.readyState }, state);
           if (typeof onload_fn === "function") {
-            onload_fn(..._o_args);
             try {
-              return super.send(context.args[1]);
+              onload_fn.apply(this, _o_args);
             } catch (e) {
               logger3.error("cannot execute function onload() on xhr hook, error:", e);
             }
           }
-        });
+        };
       }
       addEventListener(...args) {
-        if (args[0] !== "readystatechange" && args[0] !== "load")
+        const event_type = args[0];
+        const listener = args[1];
+        if (event_type !== "readystatechange" && event_type !== "load")
           return super.addEventListener(...args);
-        super.addEventListener(args[0], async (..._o_args) => {
-          const state = xhr_hook_map.get(this);
-          await await_after_hook(state);
-          if (typeof args[1] === "function") {
+        const state = xhr_hook_map.get(this);
+        const hook_wrapped_listener = async (..._o_args) => {
+          await await_after_hook({ readyState: super.readyState }, state);
+          console.log("finished hooking", state._kumiyui_context.args[0]);
+          if (typeof listener === "function") {
             try {
-              args[1](..._o_args);
+              listener.apply(this, _o_args);
             } catch (e) {
               logger3.error("cannot execute function given on the second argument of addEventListener() at xhr hook, error:", e);
             }
           }
-        });
+        };
+        if (!state._kumiyui_event_listeners)
+          state._kumiyui_event_listeners = new WeakMap;
+        state._kumiyui_event_listeners.set(listener, hook_wrapped_listener);
+        return super.addEventListener(event_type, hook_wrapped_listener, ...args.splice(2));
+      }
+      removeEventListener(...args) {
+        const state = xhr_hook_map.get(this);
+        const event_type = args[0];
+        const listener = args[1];
+        if (state._kumiyui_event_listeners && state._kumiyui_event_listeners.has(listener)) {
+          const wrapped = state._kumiyui_event_listeners.get(listener);
+          return super.removeEventListener(event_type, wrapped, ...args.splice(2));
+        }
+        return super.removeEventListener(event_type, listener, ...args.splice(2));
       }
       async send(body) {
         const state = xhr_hook_map.get(this);
+        if (state._kumiyui_send_triggered === true)
+          return super.send(body);
         state._kumiyui_context.args[1] = body;
         state._kumiyui_context.before_state = "body";
-        const context2 = state._kumiyui_context;
+        const context = state._kumiyui_context;
         Object.defineProperty(this, "json", {
           get() {
-            const r_body = context2?.args[1];
+            const r_body = context?.args[1];
             if (typeof r_body === "string") {
               try {
                 return JSON.parse(r_body);
@@ -972,37 +1001,10 @@ var _init_network_hook = () => {
             }
           },
           set(value) {
-            context2.args[1] = JSON.stringify(value);
+            context.args[1] = JSON.stringify(value);
           }
         });
-        for (const hook of hook_registry?.before) {
-          try {
-            const modification = await hook(context2);
-            let _response = { status: 200, statusText: "OK", headers: new Headers, body: null, send_to_server: false };
-            if (typeof modification !== "undefined") {
-              if (modification === false) {
-                state._kumiyui_response = null;
-                state._kumiyui_blocked = true;
-                break;
-              }
-              if (modification && typeof modification === "object") {
-                ["status", "statusText", "headers", "body", "send_to_server"].forEach((_res_key) => {
-                  if (modification[_res_key] !== undefined)
-                    _response[_res_key] = modification[_res_key];
-                  else if (_res_key === "send_to_server")
-                    _response["send_to_server"] = false;
-                });
-                state._kumiyui_response = _response;
-              } else if (typeof modification === "string") {
-                _response["body"] = modification;
-                state._kumiyui_response = _response;
-              }
-              break;
-            }
-          } catch (e) {
-            logger3.error(`cannot execute hook listener on XHR hook (type: "before", second call), error:`, e);
-          }
-        }
+        await xhr_before(state);
         if (state._kumiyui_blocked === true)
           return;
         super.addEventListener("readystatechange", async () => {
@@ -1010,55 +1012,57 @@ var _init_network_hook = () => {
             state._kumiyui_finished = true;
             return;
           }
-          if (this.readyState === 4) {
-            let simulated_res = new Response(super.response, {
-              status: super.status,
-              statusText: super.statusText,
-              headers: new Headers((this.getAllResponseHeaders() || "").split(`\r
+          if (super.readyState !== 4)
+            return;
+          let simulated_res = new Response(super.response, {
+            status: super.status,
+            statusText: super.statusText,
+            headers: new Headers((this.getAllResponseHeaders() || "").split(`\r
 `).reduce((acc, line) => {
-                const [k, v] = line.split(": ");
-                if (k)
-                  acc[k] = v;
-                return acc;
-              }, {}))
-            });
-            for (const hook of hook_registry?.after) {
+              const [k, v] = line.split(": ");
+              if (k)
+                acc[k] = v;
+              return acc;
+            }, {}))
+          });
+          for (const hook of hook_registry?.after) {
+            try {
+              const clone = simulated_res.clone();
+              let _response = { status: 200, statusText: "OK", headers: new Headers, body: null, send_to_server: false };
+              let mod = null;
               try {
-                const clone = simulated_res.clone();
-                let _response = { status: 200, statusText: "OK", headers: new Headers, body: null, send_to_server: false };
-                let mod = null;
-                try {
-                  mod = await hook(context2, clone);
-                } catch (e) {
-                  logger3.error(`cannot execute hook listener on XHR hook (type: "before"), error:`, e);
-                }
-                if (typeof mod === "object") {
-                  ["status", "statusText", "headers", "body", "send_to_server"].forEach((_res_key) => {
-                    if (mod[_res_key] !== undefined)
-                      _response[_res_key] = mod[_res_key];
-                    else if (_res_key === "send_to_server")
-                      _response["send_to_server"] = false;
-                  });
-                  state._kumiyui_response = _response;
-                } else if (typeof mod === "string") {
-                  _response["body"] = mod;
-                  state._kumiyui_response = _response;
-                }
-                state._kumiyui_finished = true;
+                mod = await hook(context, clone);
               } catch (e) {
-                logger3.error(`error on XHR hook (type: "after"), error:`, e);
+                logger3.error(`cannot execute hook listener on XHR hook (type: "after"), error:`, e);
               }
+              if (typeof mod === "object" && mod !== null) {
+                ["status", "statusText", "headers", "body", "send_to_server"].forEach((_res_key) => {
+                  if (mod[_res_key] !== undefined)
+                    _response[_res_key] = mod[_res_key];
+                  else if (_res_key === "send_to_server")
+                    _response["send_to_server"] = false;
+                });
+                state._kumiyui_response = _response;
+              } else if (typeof mod === "string") {
+                _response["body"] = mod;
+                state._kumiyui_response = _response;
+              }
+            } catch (e) {
+              logger3.error(`error on XHR hook (type: "after"), error:`, e);
             }
           }
+          state._kumiyui_finished = true;
         });
         if (!state._kumiyui_is_opened || super.readyState < 1) {
           state._kumiyui_has_to_queue_response = true;
-          state._kumiyui_queued_response = context2.args[1];
+          state._kumiyui_queued_response = context.args[1];
         } else {
           try {
             if (state._kumiyui_blocked === true || state._kumiyui_response?.send_to_server === false)
               return;
-            return super.send(context2.args[1]);
+            const native_send = super.send(context.args[1]);
+            state._kumiyui_send_triggered = true;
+            return native_send;
           } catch (e) {
             logger3.error("cannot perform send() on xhr hook, error:", e);
           }
@@ -1265,11 +1269,11 @@ _set_drop_in_console(_set_trigger_command_input(trigger_command_input));
 
 // modules/anti_fullscreen_bypass.js
 var is_toggled = false;
-register_network_hook("before", (context2) => {
+register_network_hook("before", (context) => {
   if (!is_toggled)
     return;
-  const url = context2.args[0];
-  const body = context2.args[1];
+  const url = context.args[0];
+  const body = context.args[1];
   if (url?.toString().toLowerCase().replaceAll(" ", "").includes("frontexamtrack/saveobj")) {
     if (body.includes("exit_full_screen") || body.includes("blur_window"))
       return { status: 404 };
@@ -1326,10 +1330,10 @@ var create_encryption = async () => {
 var is_toggled2 = false;
 var _encode = null;
 var _decode = null;
-register_network_hook("after", async (context2, response) => {
+register_network_hook("after", async (context, response) => {
   if (!is_toggled2)
     return;
-  const url = context2.args[0];
+  const url = context.args[0];
   if (url?.toString().toLowerCase().replaceAll(" ", "").includes("api/frontexam/initdata")) {
     if (!_encode || !_decode) {
       const { encode, decode } = await create_encryption();
@@ -1337,10 +1341,12 @@ register_network_hook("after", async (context2, response) => {
       _decode = decode;
     }
     const _json = await response.json();
+    console.log(_json);
     const data = _decode(_json?.data?.content);
     data.examObj.minutes = Infinity;
     _json.data.content = _encode(data);
     let new_res = JSON.stringify(_json);
+    console.log(new_res);
     return {
       body: new_res
     };
@@ -1373,10 +1379,10 @@ var main_logger = null;
 var _encode2 = null;
 var _decode2 = null;
 var potential_route = "frontexam/initdata";
-register_network_hook("after", async (context2, response) => {
+register_network_hook("after", async (context, response) => {
   if (!is_toggled3)
     return;
-  const url = context2.args[0];
+  const url = context.args[0];
   if (url?.toString()?.toLowerCase().replaceAll(" ", "").includes(potential_route)) {
     try {
       if (!_encode2 || !_decode2) {
@@ -1423,10 +1429,10 @@ var anti_app_restriction = ({ logger }) => {
 
 // modules/vip_bypass.js
 var is_toggled4 = false;
-register_network_hook("after", async (context2, response) => {
+register_network_hook("after", async (context, response) => {
   if (!is_toggled4)
     return;
-  const url = context2.args[0]?.toString().toLowerCase().replaceAll(" ", "");
+  const url = context.args[0]?.toString().toLowerCase().replaceAll(" ", "");
   if (url.includes("FrontExam/MustViewAds")) {
     const _json = await response.json() ?? {};
     _json.data = false;
